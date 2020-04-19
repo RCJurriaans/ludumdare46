@@ -27,6 +27,15 @@ local bug={
 	}
 }
 
+function newmob(type, x, y, direction)
+	mob={}
+	mob.x=x
+	mob.y=y
+	mob.animations={}
+	mob.animations.tick=0
+	mob.animations.frame=0
+	mob.animations.
+
 
 -- table of mobs to draw to screen
 local mobs = {}
