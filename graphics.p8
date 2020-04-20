@@ -8,6 +8,7 @@ right=1
 up=2
 down=3
 
+-- store mobtype data for spawner
 mobtypes = {}
 mobtypes.snail={}
 mobtypes.snail.speed=0.2
@@ -20,6 +21,7 @@ mobtypes.bug.step = 3
 mobtypes.bug.spr_dir=up
 mobtypes.bug.sprites = {160,161,162}
 
+-- spawns mob of type at x and y position with a direction
 function makemob(type, x, y, direction)
 	newmob={}
 	newmob.x=x
@@ -37,6 +39,7 @@ function makemob(type, x, y, direction)
 end
 
 -- TODO: rewrite, stupidly long
+-- compares current sprite direction to template
 function isxflipped(type, direction)
 	if direction==left then
 		if type.spr_dir==right then
@@ -50,7 +53,6 @@ function isxflipped(type, direction)
 	end
 	return false
 end
-
 function isyflipped(type, direction)
 	if direction==up then
 		if type.spr_dir==down then
@@ -66,13 +68,32 @@ function isyflipped(type, direction)
 end
 
 
--- table of mobs to draw to screen
+-- table of all mobs to update and draw
 local mobs = {}
 
+-- spawns a random mob
+function spawn_rnd_mob()
+	screendir=flr(rnd(4))
+	randompos=flr(rnd(96))+16
+	randomoffset=flr(rnd(32))
+	-- screendir=direction
+	if screendir==left then
+		addmob(makemob(mobtypes.snail,-8-randomoffset,randompos,right))
+	elseif screendir==right then
+		addmob(makemob(mobtypes.snail,136+randomoffset,randompos,left))
+	elseif screendir==up then
+		addmob(makemob(mobtypes.bug,randompos,-8-randomoffset,down))
+	else
+		addmob(makemob(mobtypes.bug,randompos,136+randomoffset,up))
+	end
+end
+
+-- adds mob to mob handler
 function addmob(mob)
 	mobs[#mobs+1]=mob
 end
 
+-- animates object sprites
 function animate(obj)
 	obj.animations.tick=(obj.animations.tick+1)%obj.animations.step
 	if(obj.animations.tick==0) then
@@ -81,57 +102,65 @@ function animate(obj)
 	spr(obj.animations.sprites[obj.animations.frame],obj.x,obj.y,1,1,obj.animations.spr_xflip,obj.animations.spr_yflip)
 end
 
+-- updates object position
 function move(obj)
-	if obj.direction==0 then
+	if obj.direction==left then
 		obj.x-=obj.speed
-	elseif obj.direction==1 then
+	elseif obj.direction==right then
 		obj.x+=obj.speed	
-	elseif obj.direction==2 then
+	elseif obj.direction==up then
 		obj.y-=obj.speed
-	elseif obj.direction==3 then
+	elseif obj.direction==down then
 		obj.y+=obj.speed
 	end
 end 
 
+-- checks if an object is offscreen
+-- with 16px margin for spawn location
 function isoffscreen(obj)
-	if (obj.x<-8) or (obj.x>128) or (obj.y<-8) or (obj.y>128) then
+	if (obj.x<-24) or (obj.x>144) or (obj.y<-24) or (obj.y>144) then
 		return true
 	else
 		return false
 	end
 end
 
+-- draws all mobs to screen
 function drawmobs()
 	for mob in all(mobs) do 
 		animate(mob)
-		if isoffscreen(mob) then
-			del(mobs, mob)
-		end
+		-- if isoffscreen(mob) then
+		-- 	del(mobs, mob)
+		-- end
 	end
 end
-
+-- updates all mobs
 function updatemobs()
 	for mob in all(mobs) do
 		move(mob)
 	end
 end
 
+-- initializes game
 function _init()
 	mobs = {}
-	newsnail = makemob(mobtypes.snail, 64, 64, right)
-	newbug = makemob(mobtypes.bug, 64, 64, down)
-	addmob(newsnail)
-	addmob(newbug)
+	num=10
+	for i=0,10 do
+		spawn_rnd_mob()
+	end
 end
 
+-- updates game state
 function _update()
 	updatemobs()
 end
 
+-- renders game objects to screen
 function _draw()
 	cls()
 	drawmobs()
 end
+
 __gfx__
 00000000000001100000000000000000000222222222222222222222000222222222222222222222000000000000000000000000000000000000000000000000
 0000000000001100000000000000000000029999999999999aaa77a20002222222222222222222220000000000000ccc00000000000000000000000000000000
