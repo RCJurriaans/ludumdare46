@@ -2,11 +2,13 @@ pico-8 cartridge // http://www.pico-8.com
 version 19
 __lua__
 
--- store directions for comparisons
+-- direction variables
 left=0
 right=1
 up=2
 down=3
+-- screen variables
+margin=32
 
 -- store mobtype data for spawner
 mobtypes = {}
@@ -75,16 +77,16 @@ local mobs = {}
 function spawn_rnd_mob()
 	screendir=flr(rnd(4))
 	randompos=flr(rnd(96))+16
-	randomoffset=flr(rnd(32))
+	randomoffset=flr(rnd(margin-8)) -- ofset within spawn margin
 	-- screendir=direction
 	if screendir==left then
 		addmob(makemob(mobtypes.snail,-8-randomoffset,randompos,right))
 	elseif screendir==right then
-		addmob(makemob(mobtypes.snail,136+randomoffset,randompos,left))
+		addmob(makemob(mobtypes.snail,128+randomoffset,randompos,left))
 	elseif screendir==up then
 		addmob(makemob(mobtypes.bug,randompos,-8-randomoffset,down))
 	else
-		addmob(makemob(mobtypes.bug,randompos,136+randomoffset,up))
+		addmob(makemob(mobtypes.bug,randompos,128+randomoffset,up))
 	end
 end
 
@@ -118,7 +120,7 @@ end
 -- checks if an object is offscreen
 -- with 16px margin for spawn location
 function isoffscreen(obj)
-	if (obj.x<-24) or (obj.x>144) or (obj.y<-24) or (obj.y>144) then
+	if (obj.x<-margin) or (obj.x>128+margin) or (obj.y<-margin) or (obj.y>128+margin) then
 		return true
 	else
 		return false
@@ -129,23 +131,21 @@ end
 function drawmobs()
 	for mob in all(mobs) do 
 		animate(mob)
-		-- if isoffscreen(mob) then
-		-- 	del(mobs, mob)
-		-- end
+		if isoffscreen(mob) then
+			del(mobs, mob)
+		end
 	end
 end
 -- updates all mobs
 function updatemobs()
-	for mob in all(mobs) do
-		move(mob)
-	end
+	foreach(mobs,move)
 end
 
 -- initializes game
 function _init()
 	mobs = {}
 	num=10
-	for i=0,10 do
+	for i=1,num do
 		spawn_rnd_mob()
 	end
 end
