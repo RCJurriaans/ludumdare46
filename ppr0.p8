@@ -129,6 +129,7 @@ songs[3] = song3
 song4={}
 song4.title="waltz heptapluralis"
 song4.start=48
+song4.speed=18
 songs[4] = song4
 
 
